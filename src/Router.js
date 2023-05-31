@@ -4,6 +4,8 @@ import Sidebar from "./components/SideBar";
 import GettingStarted from "./pages/GettingStarted";
 import WalletRecovery from "./pages/WalletRecovery";
 import Footer from "./components/Footer";
+import MainLayout from "./layout/MainLayout";
+import Dashboard from "./pages/Dashboard";
 
 function Router() {
   return (
@@ -13,7 +15,6 @@ function Router() {
         display="flex"
         flexDirection="row"
         justifyContent="center"
-        backgroundColor="#000"
         p={2}
       >
         <Box>
@@ -22,6 +23,10 @@ function Router() {
         <Routes>
           <Route path="/getting-started" element={<GettingStarted />} />
           <Route path="/wallet-recovery" element={<WalletRecovery />} />
+          <Route
+            path="/dashboard"
+            element={<MainLayout childComponent={<Dashboard />} />}
+          />
         </Routes>
       </Box>
     </BrowserRouter>

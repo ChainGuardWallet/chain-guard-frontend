@@ -1,4 +1,4 @@
-import { Box, Input, InputAdornment, Button, Paper } from "@mui/material";
+import { Box, Button, Paper } from "@mui/material";
 
 function WalletRecovery() {
   return (

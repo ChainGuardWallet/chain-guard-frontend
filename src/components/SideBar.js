@@ -61,7 +61,7 @@ function Sidebar({ isLoggedIn }) {
               md: "110px",
               lg: "300px",
             },
-            backgroundColor: "#2A2D34",
+            backgroundColor: "#111827",
             boxSizing: "border-box",
             border: "none",
           },
@@ -83,19 +83,21 @@ function Sidebar({ isLoggedIn }) {
         </Box>
 
         <List>
-          {isLoggedIn
+          {true
             ? loggedRoutes.map((item) => (
                 <Box>
                   <Button
                     disableTouchRipple
                     onClick={() => navigate(item.route)}
                     sx={{
-                      color: "#FFF",
                       fontFamily: "inherit",
                       fontSize: "18px",
                       textTransform: "none",
                       width: "100%",
                       paddingBottom: "10px",
+                      color: `${
+                        location.pathname === item.route ? "#70BDD6" : "#FFF"
+                      }`,
                       borderRight: `
                          4px
                        solid  ${
