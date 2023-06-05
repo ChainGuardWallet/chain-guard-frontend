@@ -2,10 +2,9 @@ import {
   Box,
   IconButton,
   Button,
-  Popper,
-  Grow,
   MenuList,
   MenuItem,
+  Popover,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
@@ -14,12 +13,13 @@ import { useState } from "react";
 function Account({ nameTag, owner, address, balance }) {
   const tokens = ["USDT", "ETH", "USDC", "WBTC"];
   const [anchorEl, setAnchorEl] = useState(null);
-  const [openPopper, setOpenPopper] = useState(false);
   const [token, setToken] = useState(tokens[0]);
+  const handleClosePopOver = () => {
+    setAnchorEl(null);
+  };
 
   const handleClick = (event) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
-    setOpenPopper((prev) => !prev);
   };
 
   return (
@@ -80,27 +80,43 @@ function Account({ nameTag, owner, address, balance }) {
           {token}
           <ArrowDropDownIcon />
         </Button>
-        <Popper open={openPopper} anchorEl={anchorEl}>
-          <Grow in={true}>
-            <Box
-              sx={{
-                border: "2px solid #5C80BC",
-                bgcolor: "#192238",
-                borderRadius: "10px",
-                paddingX: "5px",
-              }}
-            >
-              <MenuList>
-                {tokens.map(
-                  (item) =>
-                    item !== token && (
-                      <MenuItem onClick={() => setToken(item)}>{item}</MenuItem>
-                    )
-                )}
-              </MenuList>
-            </Box>
-          </Grow>
-        </Popper>
+        <Popover
+          anchorEl={anchorEl}
+          sx={{
+            ".MuiPopover-paper": {
+              borderRadius: "10px",
+            },
+          }}
+          open={Boolean(anchorEl)}
+          onClose={handleClosePopOver}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "center",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "center",
+          }}
+        >
+          <Box
+            sx={{
+              border: "2px solid #5C80BC",
+              bgcolor: "#192238",
+              borderRadius: "10px",
+              color: "#FFF",
+              paddingX: "3px",
+            }}
+          >
+            <MenuList>
+              {tokens.map(
+                (item) =>
+                  item !== token && (
+                    <MenuItem onClick={() => setToken(item)}>{item}</MenuItem>
+                  )
+              )}
+            </MenuList>
+          </Box>
+        </Popover>
       </Box>
     </Box>
   );

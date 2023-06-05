@@ -60,6 +60,9 @@ function Dashboard() {
           <AddBoxIcon sx={{ marginRight: "5px" }} />
           New Transaction
         </Button>
+        <Modal open={openModal} onClose={() => setOpenModal(false)}>
+          <CreateTransactionModal handleClose={() => setOpenModal(false)} />
+        </Modal>
       </Box>
 
       {mockData.map((item) => (
@@ -70,9 +73,6 @@ function Dashboard() {
           balance={item.balance}
         />
       ))}
-      <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <CreateTransactionModal handleClose={() => setOpenModal(false)} />
-      </Modal>
     </Box>
   );
 }
