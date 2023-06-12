@@ -19,7 +19,6 @@ function WalletRecovery() {
         <Box pb={3}>Continue your journey by import your wallet.</Box>
         <Box width="70%">
           <Button
-            disableTouchRipple
             sx={{
               borderRadius: "25px",
               border: "2px solid #FFF",
@@ -52,7 +51,6 @@ function WalletRecovery() {
         </Box>
         <Box width="70%" pt={2}>
           <Button
-            disableTouchRipple
             sx={{
               borderRadius: "25px",
               border: "2px solid #FFF",

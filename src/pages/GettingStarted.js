@@ -43,7 +43,6 @@ function GettingStarted() {
           endAdornment={
             <InputAdornment position="end">
               <Button
-                disableTouchRipple
                 sx={{
                   borderRadius: "25px",
                   border: "2px solid #FFF",
@@ -73,7 +72,6 @@ function GettingStarted() {
       <Box>Don't have a wallet? Get started with ChainGuard now.</Box>
       <Box width="70%" pt={3}>
         <Button
-          disableTouchRipple
           sx={{
             borderRadius: "25px",
             border: "2px solid #FFF",
