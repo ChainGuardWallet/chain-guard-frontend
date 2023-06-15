@@ -14,7 +14,7 @@ function Dashboard() {
     {
       nameTag: "Account #1",
       owner: "0x242ed78bf0fe7672ff01ae6de558e45b3749f197",
-      address: "0x2a26bca625b223971909dd88fc93faeb050dc5b3",
+      address: "0xcB714F263cBc742A79745faf2B2c47367460D26A",
       balance: {
         USDT: 500000,
         USDC: 200000,
@@ -25,7 +25,7 @@ function Dashboard() {
     {
       nameTag: "Account #2",
       owner: "0xb3eC5Db932736D0203004FD7208b9b007d166B35",
-      address: "0x2a26bca625b223971909dd88fc93faeb050dc5b3",
+      address: "0x990b82dc8ab6134f482d2cad3bba11c537cd7b45",
       balance: {
         USDT: 200000,
         USDC: 500000,

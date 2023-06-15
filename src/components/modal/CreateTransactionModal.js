@@ -40,25 +40,31 @@ const tokens = [
   {
     name: "ETH",
     address: "0x00000000",
+    decimals: 18,
   },
   {
     name: "USDC",
     address: "0x00000001",
+    decimals: 6,
   },
   {
     name: "USDT",
     address: "0x00000002",
+    decimals: 6,
   },
   {
     name: "WBTC",
     address: "0x00000003",
+    decimals: 8,
   },
 ];
 
 function CreateTransactionModal({ handleClose }) {
-  const [sender, setSender] = useState(mockData[0].address);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [sender, setSender] = useState(mockData[0].address);
   const [token, setToken] = useState(tokens[0].name);
+  const [receiver, setReceiver] = useState("");
+  const [amount, setAmount] = useState(0);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -113,7 +119,7 @@ function CreateTransactionModal({ handleClose }) {
               anchorEl={anchorEl}
               sx={{
                 ".MuiPopover-paper": {
-                  borderRadius: "10px",
+                  borderRadius: "15px",
                 },
               }}
               open={Boolean(anchorEl)}
@@ -131,7 +137,7 @@ function CreateTransactionModal({ handleClose }) {
                 sx={{
                   border: "2px solid #5C80BC",
                   bgcolor: "#192238",
-                  borderRadius: "10px",
+                  borderRadius: "15px",
                   color: "#FFF",
                   paddingX: "20px",
                 }}
@@ -140,7 +146,10 @@ function CreateTransactionModal({ handleClose }) {
                   {tokens.map(
                     (item) =>
                       item.name !== token && (
-                        <MenuItem onClick={() => setToken(item.name)}>
+                        <MenuItem
+                          sx={{ fontFamily: "Lexend Exa" }}
+                          onClick={() => setToken(item.name)}
+                        >
                           {item.name}
                         </MenuItem>
                       )
@@ -163,6 +172,8 @@ function CreateTransactionModal({ handleClose }) {
           </Box>
           <Box pt={2}>
             <Input
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
               type="number"
               disableUnderline
               color="#FFF"
@@ -202,6 +213,7 @@ function CreateTransactionModal({ handleClose }) {
                       fontFamily: "inherit",
                       marginRight: "5px",
                     }}
+                    onClick={() => setAmount(getBalance())}
                   >
                     MAX
                   </Button>
@@ -261,21 +273,6 @@ function CreateTransactionModal({ handleClose }) {
       >
         <Box fontWeight="600">Sender:</Box>
         <Box px={2} width="100%">
-          {/* <Input
-            disableUnderline
-            color="#FFF"
-            sx={{
-              paddingLeft: "10px",
-              height: "50px",
-              color: "#FFF",
-              fontFamily: "inherit",
-              fontSize: "18px",
-              fontWeight: "500",
-              border: "2px solid #5C80BC",
-              borderRadius: "15px",
-              width: "100%",
-            }}
-          /> */}
           <Button
             sx={{
               textTransform: "none",
@@ -329,6 +326,7 @@ function CreateTransactionModal({ handleClose }) {
                           fontFamily: "Lexend Exa",
                           fontSize: "15px",
                           fontWeight: "500",
+                          paddingY: "0px",
                         }}
                         onClick={() => setSender(item.address)}
                       >
@@ -361,6 +359,8 @@ function CreateTransactionModal({ handleClose }) {
         <Box fontWeight="600">Receiver:</Box>
         <Box px={2} width="100%">
           <Input
+            value={receiver}
+            onChange={(e) => setReceiver(e.target.value)}
             disableUnderline
             color="#FFF"
             sx={{

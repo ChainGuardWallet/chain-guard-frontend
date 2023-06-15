@@ -5,7 +5,7 @@ import { useState } from "react";
 import * as React from "react";
 
 function MainLayout({ childComponent }) {
-  const networks = ["Ethereum", "BSC", "Fantom", "Polygon"];
+  const networks = ["Goerli", "Sepolia"];
   const [network, setNetwork] = useState(networks[0]);
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -52,7 +52,6 @@ function MainLayout({ childComponent }) {
             sx={{
               ".MuiPopover-paper": {
                 borderRadius: "10px",
-                // width: "140px",
               },
             }}
             open={Boolean(anchorEl)}
@@ -81,7 +80,10 @@ function MainLayout({ childComponent }) {
                 {networks.map(
                   (item) =>
                     item !== network && (
-                      <MenuItem onClick={() => setNetwork(item)}>
+                      <MenuItem
+                        sx={{ fontFamily: "inherit", fontSize: "15px" }}
+                        onClick={() => setNetwork(item)}
+                      >
                         {item}
                       </MenuItem>
                     )
