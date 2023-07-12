@@ -1,8 +1,10 @@
 import { Drawer, Box, List, Button } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { AccountContext } from "../Router";
 
-function Sidebar({ isLoggedIn }) {
+function Sidebar() {
+  const { mnemonic } = useContext(AccountContext);
   const [open, setOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
@@ -83,7 +85,7 @@ function Sidebar({ isLoggedIn }) {
         </Box>
 
         <List>
-          {true
+          {mnemonic !== null
             ? loggedRoutes.map((item) => (
                 <Box>
                   <Button

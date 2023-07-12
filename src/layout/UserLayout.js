@@ -4,7 +4,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { useState } from "react";
 import * as React from "react";
 
-function MainLayout({ childComponent }) {
+function UserLayout({ childComponent }) {
   const networks = ["Goerli", "Sepolia"];
   const [network, setNetwork] = useState(networks[0]);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -106,4 +106,4 @@ function MainLayout({ childComponent }) {
   );
 }
 
-export default MainLayout;
+export default UserLayout;

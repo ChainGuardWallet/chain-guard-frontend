@@ -60,32 +60,168 @@ const tokens = [
 ];
 
 function CreateTransactionModal({ handleClose }) {
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [senderAnchorEl, setSenderAnchorEl] = useState(null);
+  const [tokenAnchorEl, setTokenAnchorEl] = useState(null);
   const [sender, setSender] = useState(mockData[0].address);
   const [token, setToken] = useState(tokens[0].name);
   const [receiver, setReceiver] = useState("");
   const [amount, setAmount] = useState(0);
 
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClosePopOver = () => {
-    setAnchorEl(null);
-  };
-
   function getBalance() {
     return mockData.find((item) => item.address === sender).balance[token];
   }
 
-  function TokenInput() {
-    const [anchorEl, setAnchorEl] = useState(null);
-    const handleClick = (event) => {
-      setAnchorEl(event.currentTarget);
-    };
-    const handleClosePopOver = () => {
-      setAnchorEl(null);
-    };
-    return (
+  return (
+    <Box
+      sx={{
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        backgroundColor: "#111827",
+        width: "40%",
+        height: "60%",
+        borderRadius: "25px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-end",
+          paddingTop: "10px",
+          paddingRight: "10px",
+          width: "100%",
+        }}
+      >
+        <IconButton onClick={handleClose}>
+          <CancelIcon sx={{ color: "#FFF" }} />
+        </IconButton>
+      </Box>
+      <Box
+        sx={{ display: "flex", justifyContent: "center", paddingTop: "20px" }}
+      >
+        New Transaction
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          bgcolor: "#161E2D",
+          width: "80%",
+          borderRadius: "15px",
+          marginTop: "30px",
+          padding: "20px",
+        }}
+      >
+        <Box fontWeight="600">Sender:</Box>
+        <Box px={2} width="100%">
+          <Button
+            sx={{
+              textTransform: "none",
+              borderRadius: "15px",
+              fontFamily: "inherit",
+              color: "inherit",
+              border: "2px solid #5C80BC",
+              width: "100%",
+              height: "50px",
+            }}
+            onClick={(e) => setSenderAnchorEl(e.currentTarget)}
+          >
+            <Box width="95%">{sender}</Box>
+            <Box width="5%" display="flex" alignItems="center">
+              <KeyboardArrowRightIcon />
+            </Box>
+          </Button>
+          <Popover
+            anchorEl={senderAnchorEl}
+            sx={{
+              ".MuiPopover-paper": {
+                borderRadius: "15px",
+              },
+            }}
+            open={Boolean(senderAnchorEl)}
+            onClose={() => setSenderAnchorEl(null)}
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "center",
+            }}
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "center",
+            }}
+          >
+            <Box
+              sx={{
+                border: "2px solid #5C80BC",
+                bgcolor: "#192238",
+                borderRadius: "15px",
+                color: "#FFF",
+                paddingX: "13px",
+              }}
+            >
+              <MenuList>
+                {mockData.map(
+                  (item) =>
+                    item.address !== sender && (
+                      <MenuItem
+                        sx={{
+                          fontFamily: "Lexend Exa",
+                          fontSize: "15px",
+                          fontWeight: "500",
+                          paddingY: "0px",
+                        }}
+                        onClick={() => setSender(item.address)}
+                      >
+                        <Box
+                          display="flex"
+                          justifyContent="flex-start"
+                          width="100%"
+                        >
+                          {item.address}
+                        </Box>
+                      </MenuItem>
+                    )
+                )}
+              </MenuList>
+            </Box>
+          </Popover>
+        </Box>
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          bgcolor: "#161E2D",
+          width: "80%",
+          borderRadius: "15px",
+          marginTop: "30px",
+          padding: "20px",
+        }}
+      >
+        <Box fontWeight="600">Receiver:</Box>
+        <Box px={2} width="100%">
+          <Input
+            value={receiver}
+            onChange={(e) => setReceiver(e.target.value)}
+            disableUnderline
+            color="#FFF"
+            sx={{
+              paddingLeft: "10px",
+              height: "50px",
+              color: "#FFF",
+              fontFamily: "inherit",
+              fontSize: "18px",
+              fontWeight: "500",
+              border: "2px solid #5C80BC",
+              borderRadius: "15px",
+              width: "100%",
+            }}
+          />
+        </Box>
+      </Box>
       <Box
         sx={{
           display: "flex",
@@ -108,7 +244,7 @@ function CreateTransactionModal({ handleClose }) {
                 width: "70%",
                 height: "50px",
               }}
-              onClick={handleClick}
+              onClick={(e) => setTokenAnchorEl(e.currentTarget)}
             >
               <Box width="80%">{token}</Box>
               <Box width="20%" display="flex" alignItems="center">
@@ -116,14 +252,14 @@ function CreateTransactionModal({ handleClose }) {
               </Box>
             </Button>
             <Popover
-              anchorEl={anchorEl}
+              anchorEl={tokenAnchorEl}
               sx={{
                 ".MuiPopover-paper": {
                   borderRadius: "15px",
                 },
               }}
-              open={Boolean(anchorEl)}
-              onClose={handleClosePopOver}
+              open={Boolean(tokenAnchorEl)}
+              onClose={() => setTokenAnchorEl(null)}
               anchorOrigin={{
                 vertical: "bottom",
                 horizontal: "center",
@@ -223,161 +359,6 @@ function CreateTransactionModal({ handleClose }) {
           </Box>
         </Box>
       </Box>
-    );
-  }
-
-  return (
-    <Box
-      sx={{
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        backgroundColor: "#111827",
-        width: "40%",
-        height: "60%",
-        borderRadius: "25px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "flex-end",
-          paddingTop: "10px",
-          paddingRight: "10px",
-          width: "100%",
-        }}
-      >
-        <IconButton onClick={handleClose}>
-          <CancelIcon sx={{ color: "#FFF" }} />
-        </IconButton>
-      </Box>
-      <Box
-        sx={{ display: "flex", justifyContent: "center", paddingTop: "20px" }}
-      >
-        New Transaction
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          bgcolor: "#161E2D",
-          width: "80%",
-          borderRadius: "15px",
-          marginTop: "30px",
-          padding: "20px",
-        }}
-      >
-        <Box fontWeight="600">Sender:</Box>
-        <Box px={2} width="100%">
-          <Button
-            sx={{
-              textTransform: "none",
-              borderRadius: "15px",
-              fontFamily: "inherit",
-              color: "inherit",
-              border: "2px solid #5C80BC",
-              width: "100%",
-              height: "50px",
-            }}
-            onClick={handleClick}
-          >
-            <Box width="95%">{sender}</Box>
-            <Box width="5%" display="flex" alignItems="center">
-              <KeyboardArrowRightIcon />
-            </Box>
-          </Button>
-          <Popover
-            anchorEl={anchorEl}
-            sx={{
-              ".MuiPopover-paper": {
-                borderRadius: "15px",
-              },
-            }}
-            open={Boolean(anchorEl)}
-            onClose={handleClosePopOver}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "center",
-            }}
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "center",
-            }}
-          >
-            <Box
-              sx={{
-                border: "2px solid #5C80BC",
-                bgcolor: "#192238",
-                borderRadius: "15px",
-                color: "#FFF",
-                paddingX: "13px",
-              }}
-            >
-              <MenuList>
-                {mockData.map(
-                  (item) =>
-                    item.address !== sender && (
-                      <MenuItem
-                        sx={{
-                          fontFamily: "Lexend Exa",
-                          fontSize: "15px",
-                          fontWeight: "500",
-                          paddingY: "0px",
-                        }}
-                        onClick={() => setSender(item.address)}
-                      >
-                        <Box
-                          display="flex"
-                          justifyContent="flex-start"
-                          width="100%"
-                        >
-                          {item.address}
-                        </Box>
-                      </MenuItem>
-                    )
-                )}
-              </MenuList>
-            </Box>
-          </Popover>
-        </Box>
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          bgcolor: "#161E2D",
-          width: "80%",
-          borderRadius: "15px",
-          marginTop: "30px",
-          padding: "20px",
-        }}
-      >
-        <Box fontWeight="600">Receiver:</Box>
-        <Box px={2} width="100%">
-          <Input
-            value={receiver}
-            onChange={(e) => setReceiver(e.target.value)}
-            disableUnderline
-            color="#FFF"
-            sx={{
-              paddingLeft: "10px",
-              height: "50px",
-              color: "#FFF",
-              fontFamily: "inherit",
-              fontSize: "18px",
-              fontWeight: "500",
-              border: "2px solid #5C80BC",
-              borderRadius: "15px",
-              width: "100%",
-            }}
-          />
-        </Box>
-      </Box>
-      <TokenInput />
       <Box width="90%" display="flex" justifyContent="flex-end" py={3}>
         <Button
           sx={{

@@ -9,7 +9,6 @@ function WalletRecovery() {
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-
           width: "40%",
         }}
       >
