@@ -1,6 +1,4 @@
 import * as bip39 from "bip39";
-import sha256 from "sha256";
-import * as ethers from "ethers";
 import _sodium from "libsodium-wrappers";
 import { pbkdf2Sync } from "pbkdf2";
 import {
@@ -14,8 +12,12 @@ import {
   Grid,
   Button,
 } from "@mui/material";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { CreateWalletContext } from "../pages/GettingStarted";
+import sha256 from "sha256";
+import * as ethers from "ethers";
+import { getDeployedAddress } from "../utils/user-operation/UserOp";
+import { goerliProvider } from "../utils/user-operation/utils";
 
 const steps = [
   "Create password",
@@ -37,35 +39,37 @@ function CreateWallet() {
     setMnemonic(mnemonic);
   }
 
-  function encryptAndStore(mnemonic, password) {
+  async function encryptAndStore(mnemonic, password) {
     const nonce = _sodium.randombytes_buf(_sodium.crypto_secretbox_NONCEBYTES);
     const keyHash = pbkdf2Sync(password, "salt", 256, 32, "sha512");
 
     const encrypted = _sodium.crypto_secretbox_easy(mnemonic, nonce, keyHash);
-    window.localStorage.setItem("mnemonic", JSON.stringify(encrypted));
-    window.localStorage.setItem("encryption_nonce", JSON.stringify(nonce));
+
+    const count = 0;
+    const ownerPrivKey = sha256.x2(mnemonic + count);
+    const ownerAddress = ethers.utils.computeAddress("0x" + ownerPrivKey);
+    const accountAddress = await getDeployedAddress(
+      ownerAddress,
+      "0x".padEnd(66, "0")
+    );
+    const walletInfo = {
+      accounts: [
+        {
+          owner: ownerAddress,
+          creationNonce: count,
+          address: accountAddress,
+          tokens: [],
+          nameTag: `Account #${count + 1}`,
+        },
+      ],
+      currentNonce: count,
+    };
+
+    localStorage.setItem("account_infor", JSON.stringify(walletInfo));
+    localStorage.setItem("mnemonic", JSON.stringify(encrypted));
+    localStorage.setItem("encryption_nonce", JSON.stringify(nonce));
   }
 
-  function handleLogin(password) {
-    const nonce = Buffer.from(
-      Object.values(JSON.parse(window.localStorage.getItem("encryption_nonce")))
-    );
-    const keyHash = pbkdf2Sync(password, "salt", 256, 32, "sha512");
-    const encrypted = Buffer.from(
-      Object.values(JSON.parse(window.localStorage.getItem("mnemonic")))
-    );
-
-    if (encrypted == null) {
-      alert("no account found");
-    } else {
-      const decrypted = _sodium.crypto_secretbox_open_easy(
-        encrypted,
-        nonce,
-        keyHash
-      );
-      console.log(new TextDecoder().decode(decrypted));
-    }
-  }
   return (
     <Collapse in={currentStep > 0}>
       <Box
@@ -272,7 +276,7 @@ function CreateWallet() {
                     fontFamily: "inherit",
                     color: "#FFF",
                   }}
-                  onClick={() => {
+                  onClick={async () => {
                     switch (currentStep) {
                       case 1:
                         if (password != confirmPassword || password === "") {
@@ -300,7 +304,7 @@ function CreateWallet() {
                         }
                         if (isValid) {
                           setCurrentStep(0);
-                          encryptAndStore(mnemonic, password);
+                          await encryptAndStore(mnemonic, password);
                           break;
                         } else break;
                     }

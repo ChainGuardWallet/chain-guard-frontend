@@ -8,16 +8,15 @@ import {
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-function Account({ nameTag, owner, address, balance }) {
-  const tokens = ["USDT", "ETH", "USDC", "WBTC"];
+function Account({ nameTag, owner, address, tokens }) {
   const [anchorEl, setAnchorEl] = useState(null);
-  const [token, setToken] = useState(tokens[0]);
+  const [symbols, setSymbols] = useState(null);
+  const [token, setToken] = useState(null);
   const handleClosePopOver = () => {
     setAnchorEl(null);
   };
-
   const handleClick = (event) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
   };
@@ -57,15 +56,17 @@ function Account({ nameTag, owner, address, balance }) {
       </Box>
       <Box my={1}>
         Account's address: {address}
-        <IconButton
-          sx={{ color: "#FFF", fontSize: "15px" }}
-          onClick={() => navigator.clipboard.writeText(owner)}
-        >
-          <ContentCopyIcon fontSize="inherit" />
-        </IconButton>
+        {address[0] == "0" ? (
+          <IconButton
+            sx={{ color: "#FFF", fontSize: "15px" }}
+            onClick={() => navigator.clipboard.writeText(owner)}
+          >
+            <ContentCopyIcon fontSize="inherit" />
+          </IconButton>
+        ) : null}
       </Box>
-      <Box my={1}>
-        Balances: {balance[token]}
+      {/* <Box my={1}>
+        Balances:
         <Button
           sx={{
             width: "90px",
@@ -108,16 +109,20 @@ function Account({ nameTag, owner, address, balance }) {
             }}
           >
             <MenuList>
-              {tokens.map(
-                (item) =>
-                  item !== token && (
-                    <MenuItem onClick={() => setToken(item)}>{item}</MenuItem>
-                  )
-              )}
+              {tokens.length == 1
+                ? null
+                : tokens.map(
+                    (item) =>
+                      item !== token && (
+                        <MenuItem onClick={() => setToken(item)}>
+                          {item}
+                        </MenuItem>
+                      )
+                  )}
             </MenuList>
           </Box>
         </Popover>
-      </Box>
+      </Box> */}
     </Box>
   );
 }

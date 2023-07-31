@@ -1,40 +1,94 @@
-import { Box, Button, Modal } from "@mui/material";
+import { Box, Button, Modal, CircularProgress } from "@mui/material";
 import Account from "../components/Accounts";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import CreateTransactionModal from "../components/modal/CreateTransactionModal";
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
+import { AccountContext } from "../Router";
+import { ethers } from "ethers";
+import sha256 from "sha256";
+import { getDeployedAddress } from "../utils/user-operation/UserOp";
+import { goerliProvider } from "../utils/user-operation/utils";
+import ERC20 from "../abis/ERC20.json";
 
 function Dashboard() {
+  const { mnemonic } = useContext(AccountContext);
+  const [accountsInfo, setAccountsInfo] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const handleNewTx = () => {
     setOpenModal(true);
   };
 
-  const mockData = [
-    {
-      nameTag: "Account #1",
-      owner: "0x242ed78bf0fe7672ff01ae6de558e45b3749f197",
-      address: "0xcB714F263cBc742A79745faf2B2c47367460D26A",
-      balance: {
-        USDT: 500000,
-        USDC: 200000,
-        ETH: 50,
-        WBTC: 20,
-      },
-    },
-    {
-      nameTag: "Account #2",
-      owner: "0xb3eC5Db932736D0203004FD7208b9b007d166B35",
-      address: "0x990b82dc8ab6134f482d2cad3bba11c537cd7b45",
-      balance: {
-        USDT: 200000,
-        USDC: 500000,
-        ETH: 20,
-        WBTC: 10,
-      },
-    },
-  ];
-  return (
+  async function handleAddAccount() {
+    const currentNonce =
+      JSON.parse(localStorage.getItem("account_infor")).currentNonce + 1;
+    const ownerPrivKey = sha256.x2(mnemonic + currentNonce);
+    const ownerAddress = ethers.utils.computeAddress("0x" + ownerPrivKey);
+    const accountAddress = await getDeployedAddress(
+      ownerAddress,
+      "0x".padEnd(66, "0")
+    );
+    const account = {
+      owner: ownerAddress,
+      creationNonce: currentNonce,
+      address: accountAddress,
+      tokens: [],
+      nameTag: `Account #${currentNonce + 1}`,
+    };
+    console.log(account);
+    setAccountsInfo([...accountsInfo, account]);
+    localStorage.setItem(
+      "account_infor",
+      JSON.stringify({
+        accounts: accountsInfo,
+        currentNonce: currentNonce,
+      })
+    );
+  }
+
+  useEffect(() => {
+    async function getBalances() {
+      let accounts = JSON.parse(localStorage.getItem("account_infor")).accounts;
+      // accounts.forEach(async (acc) => {
+      //   if (acc.tokens.length != 0) {
+      //     return {
+      //       ...acc,
+      //       tokens: acc.tokens.map(async (tkn) => {
+      //         let tknContract = new ethers.Contract(tkn, ERC20, goerliProvider);
+      //         let tknSymbol = await tknContract.symbol();
+      //         let tknDecimal = (await tknContract.decimals()).toNumber();
+      //         let tknBalance = (await tknContract.balanaceOf(acc.address)).div(
+      //           ethers.utils.parseUnits("1", tknDecimal - 3).toNumber() / 1000
+      //         );
+      //         return {
+      //           tokenSymbol: tknSymbol,
+      //           tokenBalance: tknBalance,
+      //           tokenDecimal: tknDecimal,
+      //         };
+      //       }),
+      //     };
+      //   } else
+      //     return {
+      //       ...acc,
+      //       tokens: acc.tokens.push({
+      //         tokenSymbol: "ETH",
+      //         tokenBalance:
+      //           (await goerliProvider.getBalance(acc.address))
+      //             .div(ethers.utils.parseUnits("1", 15))
+      //             .toNumber() / 1000,
+      //         tokenDecimal: 18,
+      //       }),
+      //     };
+      // });
+      setAccountsInfo(accounts);
+      setIsLoading(false);
+    }
+    getBalances();
+  }, []);
+
+  return mnemonic == null ? (
+    "No account found"
+  ) : (
     <Box>
       <Box
         sx={{
@@ -43,36 +97,67 @@ function Dashboard() {
           marginBottom: "15px",
         }}
       >
-        <Button
-          sx={{
-            bgcolor: "#416CB8",
-            padding: "10px",
-            borderRadius: "10px",
-            textTransform: "none",
-            fontFamily: "inherit",
-            color: "inherit",
-            "&:hover": {
+        <Box width="26%" display="flex" justifyContent="space-between">
+          <Button
+            sx={{
               bgcolor: "#416CB8",
-            },
-          }}
-          onClick={handleNewTx}
-        >
-          <AddBoxIcon sx={{ marginRight: "5px" }} />
-          New Transaction
-        </Button>
+              padding: "10px",
+              borderRadius: "10px",
+              textTransform: "none",
+              fontFamily: "inherit",
+              color: "inherit",
+              "&:hover": {
+                bgcolor: "#416CB8",
+              },
+            }}
+            onClick={async () => await handleAddAccount()}
+          >
+            <AddBoxIcon sx={{ marginRight: "5px" }} />
+            New Account
+          </Button>
+          <Button
+            sx={{
+              bgcolor: "#416CB8",
+              padding: "10px",
+              borderRadius: "10px",
+              textTransform: "none",
+              fontFamily: "inherit",
+              color: "inherit",
+              "&:hover": {
+                bgcolor: "#416CB8",
+              },
+            }}
+            onClick={handleNewTx}
+          >
+            <AddBoxIcon sx={{ marginRight: "5px" }} />
+            New Transaction
+          </Button>
+        </Box>
         <Modal open={openModal} onClose={() => setOpenModal(false)}>
-          <CreateTransactionModal handleClose={() => setOpenModal(false)} />
+          <CreateTransactionModal
+            accountsInfo={accountsInfo}
+            handleClose={() => setOpenModal(false)}
+          />
         </Modal>
       </Box>
 
-      {mockData.map((item) => (
-        <Account
-          nameTag={item.nameTag}
-          owner={item.owner}
-          address={item.address}
-          balance={item.balance}
-        />
-      ))}
+      {isLoading ? (
+        <>
+          <CircularProgress />
+        </>
+      ) : (
+        accountsInfo.map((item) => {
+          return (
+            <Account
+              nameTag={item.nameTag}
+              owner={item.owner}
+              address={item.address}
+              balance="0"
+              tokens={item.tokens}
+            />
+          );
+        })
+      )}
     </Box>
   );
 }

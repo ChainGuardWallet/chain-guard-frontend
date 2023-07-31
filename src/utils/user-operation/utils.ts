@@ -17,14 +17,13 @@ import {
 import { BytesLike, arrayify, hexConcat, keccak256 } from "ethers/lib/utils";
 import { expect } from "chai";
 import { UserOperation } from "./UserOperation";
-import * as dotenv from "dotenv";
-dotenv.config();
+import { factory as accountFactory } from "./UserOp";
 
 export const goerliProvider = new ethers.providers.JsonRpcProvider(
-  "https://rpc.ankr.com/eth_goerli"
+  "https://ethereum-goerli.publicnode.com"
 );
 export const sepoliaProvider = new ethers.providers.JsonRpcProvider(
-  "https://rpc.sepolia.org"
+  "https://ethereum-sepolia.blockpi.network/v1/rpc/public"
 );
 
 export const AddressZero = ethers.constants.AddressZero;
@@ -112,7 +111,7 @@ export async function calcGasUsage(
 
 export function getAccountInitCode(
   owner: string,
-  factory: AccountFactory,
+  factory: AccountFactory = accountFactory,
   salt = 0
 ): BytesLike {
   return hexConcat([

@@ -7,68 +7,72 @@ import {
   MenuList,
   MenuItem,
   Popover,
+  CircularProgress,
 } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel";
-import { useState } from "react";
+import sha256 from "sha256";
+import { useEffect, useState, useContext } from "react";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
-
-const mockData = [
-  {
-    nameTag: "Account #1",
-    owner: "0x242ed78bf0fe7672ff01ae6de558e45b3749f197",
-    address: "0x2a26bca625b223971909dd88fc93faeb050dc5b3",
-    balance: {
-      USDT: 500000,
-      USDC: 200000,
-      ETH: 50,
-      WBTC: 20,
-    },
-  },
-  {
-    nameTag: "Account #2",
-    owner: "0xb3eC5Db932736D0203004FD7208b9b007d166B35",
-    address: "0x637dD76d7a4a80Ad9f9f09830B50DC384454bF27",
-    balance: {
-      USDT: 200000,
-      USDC: 500000,
-      ETH: 20,
-      WBTC: 10,
-    },
-  },
-];
-const tokens = [
-  {
-    name: "ETH",
-    address: "0x00000000",
-    decimals: 18,
-  },
-  {
-    name: "USDC",
-    address: "0x00000001",
-    decimals: 6,
-  },
-  {
-    name: "USDT",
-    address: "0x00000002",
-    decimals: 6,
-  },
-  {
-    name: "WBTC",
-    address: "0x00000003",
-    decimals: 8,
-  },
-];
+import { AccountContext } from "../../Router";
+import { ethers } from "ethers";
+import { goerliProvider } from "../../utils/user-operation/utils";
+import Account from "../../abis/Account.json";
+import { fillAndSign } from "../../utils/user-operation/UserOp";
+import { getAccountInitCode } from "../../utils/user-operation/utils";
 
 function CreateTransactionModal({ handleClose }) {
+  const { mnemonic } = useContext(AccountContext);
   const [senderAnchorEl, setSenderAnchorEl] = useState(null);
   const [tokenAnchorEl, setTokenAnchorEl] = useState(null);
-  const [sender, setSender] = useState(mockData[0].address);
-  const [token, setToken] = useState(tokens[0].name);
+  const [accounts, setAccounts] = useState(null);
+  const [sender, setSender] = useState(null);
+  const [tokens, setTokens] = useState(null);
+  const [token, setToken] = useState(null);
   const [receiver, setReceiver] = useState("");
   const [amount, setAmount] = useState(0);
 
-  function getBalance() {
-    return mockData.find((item) => item.address === sender).balance[token];
+  useEffect(() => {
+    setAccounts(JSON.parse(localStorage.getItem("account_infor")).accounts);
+    setSender(JSON.parse(localStorage.getItem("account_infor")).accounts[0]);
+    setToken(
+      JSON.parse(localStorage.getItem("account_infor")).accounts[0].tokens[0]
+        .tokenSymbol
+    );
+    setTokens(
+      JSON.parse(localStorage.getItem("account_infor")).accounts[0].tokens.map(
+        (tkn) => tkn.tokenSymbol
+      )
+    );
+  }, []);
+  async function handleCreateUserOp() {
+    const privKey = sha256.x2(mnemonic + sender.creationNonce);
+    const signer = new ethers.Wallet(privKey, goerliProvider);
+    const IAccount = new ethers.utils.Interface(Account);
+    const callData = IAccount.encodeFunctionData("execute", [
+      receiver,
+      ethers.utils.parseEther(amount.toString()),
+      "0x00",
+    ]);
+    let userOp;
+    if ((await goerliProvider.getCode(sender.address)) == "0x") {
+      userOp = await fillAndSign(
+        {
+          sender: sender.address,
+          callData: callData,
+          initCode: getAccountInitCode(sender.address),
+        },
+        signer
+      );
+    } else {
+      userOp = await fillAndSign(
+        {
+          sender: sender.address,
+          callData: callData,
+        },
+        signer
+      );
+    }
+    console.log(userOp);
   }
 
   return (
@@ -130,7 +134,15 @@ function CreateTransactionModal({ handleClose }) {
             }}
             onClick={(e) => setSenderAnchorEl(e.currentTarget)}
           >
-            <Box width="95%">{sender}</Box>
+            <Box width="95%">
+              {accounts == null ? (
+                <>
+                  <CircularProgress />
+                </>
+              ) : (
+                <> {sender.address}</>
+              )}
+            </Box>
             <Box width="5%" display="flex" alignItems="center">
               <KeyboardArrowRightIcon />
             </Box>
@@ -163,27 +175,33 @@ function CreateTransactionModal({ handleClose }) {
               }}
             >
               <MenuList>
-                {mockData.map(
-                  (item) =>
-                    item.address !== sender && (
-                      <MenuItem
-                        sx={{
-                          fontFamily: "Lexend Exa",
-                          fontSize: "15px",
-                          fontWeight: "500",
-                          paddingY: "0px",
-                        }}
-                        onClick={() => setSender(item.address)}
-                      >
-                        <Box
-                          display="flex"
-                          justifyContent="flex-start"
-                          width="100%"
+                {accounts == null ? (
+                  <>
+                    <CircularProgress />
+                  </>
+                ) : (
+                  accounts.map(
+                    (item) =>
+                      item.address !== sender.address && (
+                        <MenuItem
+                          sx={{
+                            fontFamily: "Lexend Exa",
+                            fontSize: "15px",
+                            fontWeight: "500",
+                            paddingY: "0px",
+                          }}
+                          onClick={() => setSender(item)}
                         >
-                          {item.address}
-                        </Box>
-                      </MenuItem>
-                    )
+                          <Box
+                            display="flex"
+                            justifyContent="flex-start"
+                            width="100%"
+                          >
+                            {item.address}
+                          </Box>
+                        </MenuItem>
+                      )
+                  )
                 )}
               </MenuList>
             </Box>
@@ -251,48 +269,50 @@ function CreateTransactionModal({ handleClose }) {
                 <KeyboardArrowRightIcon />
               </Box>
             </Button>
-            <Popover
-              anchorEl={tokenAnchorEl}
-              sx={{
-                ".MuiPopover-paper": {
-                  borderRadius: "15px",
-                },
-              }}
-              open={Boolean(tokenAnchorEl)}
-              onClose={() => setTokenAnchorEl(null)}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "center",
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "center",
-              }}
-            >
-              <Box
+            {tokens == null ? null : tokens.length > 1 ? (
+              <Popover
+                anchorEl={tokenAnchorEl}
                 sx={{
-                  border: "2px solid #5C80BC",
-                  bgcolor: "#192238",
-                  borderRadius: "15px",
-                  color: "#FFF",
-                  paddingX: "20px",
+                  ".MuiPopover-paper": {
+                    borderRadius: "15px",
+                  },
+                }}
+                open={Boolean(tokenAnchorEl)}
+                onClose={() => setTokenAnchorEl(null)}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "center",
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "center",
                 }}
               >
-                <MenuList>
-                  {tokens.map(
-                    (item) =>
-                      item.name !== token && (
-                        <MenuItem
-                          sx={{ fontFamily: "Lexend Exa" }}
-                          onClick={() => setToken(item.name)}
-                        >
-                          {item.name}
-                        </MenuItem>
-                      )
-                  )}
-                </MenuList>
-              </Box>
-            </Popover>
+                <Box
+                  sx={{
+                    border: "2px solid #5C80BC",
+                    bgcolor: "#192238",
+                    borderRadius: "15px",
+                    color: "#FFF",
+                    paddingX: "20px",
+                  }}
+                >
+                  <MenuList>
+                    {tokens.map(
+                      (token) =>
+                        token.tokenSymbol !== token && (
+                          <MenuItem
+                            sx={{ fontFamily: "Lexend Exa" }}
+                            onClick={() => setToken(token.tokenSymbol)}
+                          >
+                            {token.tokenSymbol}
+                          </MenuItem>
+                        )
+                    )}
+                  </MenuList>
+                </Box>
+              </Popover>
+            ) : null}
           </Box>
         </Box>
         <Box sx={{ width: "70%", display: "flex", flexDirection: "column" }}>
@@ -302,9 +322,7 @@ function CreateTransactionModal({ handleClose }) {
             sx={{ fontWeight: "600" }}
           >
             <Box>Amount</Box>
-            <Box>
-              Your balance : {getBalance()} {token}
-            </Box>
+            <Box>{/* Your balance : {getBalance()} {token} */}</Box>
           </Box>
           <Box pt={2}>
             <Input
@@ -371,6 +389,7 @@ function CreateTransactionModal({ handleClose }) {
             borderRadius: "10px",
             fontFamily: "inherit",
           }}
+          onClick={() => handleCreateUserOp()}
         >
           Finish
         </Button>

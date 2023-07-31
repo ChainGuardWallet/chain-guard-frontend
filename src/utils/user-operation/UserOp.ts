@@ -5,7 +5,12 @@ import {
   hexDataSlice,
 } from "ethers/lib/utils";
 import { ethers, BigNumber, Contract, Signer, Wallet } from "ethers";
-import { AddressZero, callDataCost } from "./utils";
+import {
+  AddressZero,
+  callDataCost,
+  goerliProvider,
+  sepoliaProvider,
+} from "./utils";
 import {
   ecsign,
   toRpcSig,
@@ -14,25 +19,20 @@ import {
 import { UserOperation } from "./UserOperation";
 import {
   EntryPoint,
+  AccountFactory__factory,
   ERC1967Proxy__factory,
   Account__factory,
   AccountFactory,
+  EntryPoint__factory,
 } from "./typechain";
-
-function encode(
-  typevalues: Array<{ type: string; val: any }>,
-  forSignature: boolean
-): string {
-  const types = typevalues.map((typevalue) =>
-    typevalue.type === "bytes" && forSignature ? "bytes32" : typevalue.type
-  );
-  const values = typevalues.map((typevalue) =>
-    typevalue.type === "bytes" && forSignature
-      ? keccak256(typevalue.val)
-      : typevalue.val
-  );
-  return defaultAbiCoder.encode(types, values);
-}
+export const factory = AccountFactory__factory.connect(
+  "0xD31F762336Ad8FAF05158BCE038BF57276018B29",
+  goerliProvider
+);
+export const ep = EntryPoint__factory.connect(
+  "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
+  goerliProvider
+);
 
 export function packUserOp(op: UserOperation, forSignature = true): string {
   if (forSignature) {
@@ -128,14 +128,12 @@ export function decodeRevertReason(
 
   if (methodSig === "0x08c379a0") {
     const [err] = ethers.utils.defaultAbiCoder.decode(["string"], dataParams);
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     return `Error(${err})`;
   } else if (methodSig === "0x00fa072b") {
     const [opindex, paymaster, msg] = ethers.utils.defaultAbiCoder.decode(
       ["uint256", "address", "string"],
       dataParams
     );
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     return `FailedOp(${opindex}, ${
       paymaster !== AddressZero ? paymaster : "none"
     }, ${msg})`;
@@ -150,7 +148,6 @@ export function decodeRevertReason(
 }
 
 const panicCodes: { [key: number]: string } = {
-  // from https://docs.soliditylang.org/en/v0.8.0/control-structures.html
   0x01: "assert(false)",
   0x11: "arithmetic overflow/underflow",
   0x12: "divide by zero",
@@ -260,9 +257,9 @@ export function fillUserOpDefault(
 }
 
 export async function getDeployedAddress(
-  accountFactory: AccountFactory,
   owner: string,
-  salt: string
+  salt: string,
+  accountFactory: AccountFactory = factory
 ): Promise<string> {
   const encodedFunctionCall =
     Account__factory.createInterface().encodeFunctionData("initialize", [
@@ -290,9 +287,9 @@ export async function getDeployedAddress(
 }
 
 export async function fillUserOp(
-  accountFactory: AccountFactory,
   op: Partial<UserOperation>,
-  entryPoint?: EntryPoint
+  entryPoint: EntryPoint = ep,
+  accountFactory: AccountFactory = factory
 ): Promise<UserOperation> {
   const op1 = { ...op };
   const provider = entryPoint?.provider;
@@ -305,7 +302,7 @@ export async function fillUserOp(
       if (initAddr.toLowerCase() === accountFactory.address.toLowerCase()) {
         const salt = hexDataSlice(initCallData, 0, 32);
         const ctr = hexDataSlice(initCallData, 32);
-        op1.sender = await getDeployedAddress(accountFactory, ctr, salt);
+        op1.sender = await getDeployedAddress(ctr, salt, accountFactory);
       } else {
         if (provider == null) throw new Error("no EntryPoint/Provider");
         op1.sender = await entryPoint!.callStatic
@@ -368,13 +365,13 @@ export async function fillUserOp(
 }
 
 export async function fillAndSign(
-  accountFactory: AccountFactory,
   op: Partial<UserOperation>,
   signer: Wallet | Signer,
-  entryPoint?: EntryPoint
+  entryPoint: EntryPoint = ep,
+  accountFactory: AccountFactory = factory
 ): Promise<UserOperation> {
   const provider = entryPoint?.provider;
-  const op2 = await fillUserOp(accountFactory, op, entryPoint);
+  const op2 = await fillUserOp(op, entryPoint, accountFactory);
 
   const chainId = await provider!.getNetwork().then((net) => net.chainId);
   console.log(chainId);

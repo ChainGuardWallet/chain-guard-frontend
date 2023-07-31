@@ -25,7 +25,6 @@ function GettingStarted() {
     const nonce = Buffer.from(
       Object.values(JSON.parse(window.localStorage.getItem("encryption_nonce")))
     );
-    console.log("nonce: ", nonce);
     const keyHash = pbkdf2Sync(password, "salt", 256, 32, "sha512");
     const encrypted = Buffer.from(
       Object.values(JSON.parse(window.localStorage.getItem("mnemonic")))
@@ -34,11 +33,9 @@ function GettingStarted() {
     if (encrypted == null) {
       alert("no account found");
     } else {
-      console.log(encrypted);
       const decrypted = new TextDecoder().decode(
         _sodium.crypto_secretbox_open_easy(encrypted, nonce, keyHash)
       );
-      console.log(decrypted);
       setMnemonic(decrypted);
       navigate("/dashboard");
     }
