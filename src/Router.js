@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/SideBar";
 import GettingStarted from "./pages/GettingStarted";
 import WalletRecovery from "./pages/WalletRecovery";
@@ -29,6 +29,7 @@ function Router() {
             <Sidebar />
           </Box>
           <Routes>
+            <Route path="/" element={<Navigate to="/getting-started" />} />
             <Route path="/getting-started" element={<GettingStarted />} />
             <Route path="/wallet-recovery" element={<WalletRecovery />} />
             <Route

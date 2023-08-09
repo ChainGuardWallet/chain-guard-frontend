@@ -25,7 +25,7 @@ function UserLayout({ childComponent }) {
           justifyContent="center"
           p={1}
           mr={2}
-          border="1px solid #FFF"
+          border="1px solid #5C80BC"
           borderRadius="10px"
         >
           <LocalGasStationRoundedIcon /> 0.01$
@@ -38,7 +38,7 @@ function UserLayout({ childComponent }) {
               border: "2px solid #5C80BC",
               borderRadius: "10px",
               textTransform: "none",
-              color: "#FFF",
+              color: "#212529",
               paddingX: "10px",
               fontFamily: "inherit",
             }}
@@ -96,8 +96,9 @@ function UserLayout({ childComponent }) {
 
       <Box
         p={4}
+        color="#FFF"
         borderRadius="15px"
-        bgcolor="#111827"
+        bgcolor="#DEE2E6"
         sx={{ marginTop: "100px" }}
       >
         {childComponent}

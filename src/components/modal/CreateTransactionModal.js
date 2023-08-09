@@ -17,8 +17,10 @@ import { AccountContext } from "../../Router";
 import { ethers } from "ethers";
 import { goerliProvider } from "../../utils/user-operation/utils";
 import Account from "../../abis/Account.json";
-import { fillAndSign } from "../../utils/user-operation/UserOp";
+import { fillAndSign, getUserOpHash } from "../../utils/user-operation/UserOp";
 import { getAccountInitCode } from "../../utils/user-operation/utils";
+import axios from "axios";
+import { BigNumber } from "ethers";
 
 function CreateTransactionModal({ handleClose }) {
   const { mnemonic } = useContext(AccountContext);
@@ -26,6 +28,7 @@ function CreateTransactionModal({ handleClose }) {
   const [tokenAnchorEl, setTokenAnchorEl] = useState(null);
   const [accounts, setAccounts] = useState(null);
   const [sender, setSender] = useState(null);
+  const [calldata, setCalldata] = useState("0x00");
   const [tokens, setTokens] = useState(null);
   const [token, setToken] = useState(null);
   const [receiver, setReceiver] = useState("");
@@ -45,13 +48,13 @@ function CreateTransactionModal({ handleClose }) {
     );
   }, []);
   async function handleCreateUserOp() {
-    const privKey = sha256.x2(mnemonic + sender.creationNonce);
+    const privKey = "0x" + sha256.x2(mnemonic + sender.creationNonce);
     const signer = new ethers.Wallet(privKey, goerliProvider);
     const IAccount = new ethers.utils.Interface(Account);
     const callData = IAccount.encodeFunctionData("execute", [
       receiver,
       ethers.utils.parseEther(amount.toString()),
-      "0x00",
+      calldata,
     ]);
     let userOp;
     if ((await goerliProvider.getCode(sender.address)) == "0x") {
@@ -59,10 +62,30 @@ function CreateTransactionModal({ handleClose }) {
         {
           sender: sender.address,
           callData: callData,
-          initCode: getAccountInitCode(sender.address),
+          initCode: getAccountInitCode(sender.owner),
         },
         signer
-      );
+      ).then(async (res) => {
+        res.callGasLimit = BigNumber.from(res.callGasLimit.valueOf())._hex;
+        res.verificationGasLimit = BigNumber.from(
+          res.verificationGasLimit.valueOf()
+        )._hex;
+        res.maxFeePerGas = BigNumber.from(res.maxFeePerGas.valueOf())._hex;
+        console.log(res);
+        console.log(
+          getUserOpHash(res, "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789", 5)
+        );
+        await axios
+          .post("http://34.142.147.90:5000/5/", {
+            jsonrpc: "2.0",
+            id: 1,
+            method: "eth_sendUserOperation",
+            params: [res, "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"],
+          })
+          .then((r) => {
+            console.log(r);
+          });
+      });
     } else {
       userOp = await fillAndSign(
         {
@@ -70,9 +93,24 @@ function CreateTransactionModal({ handleClose }) {
           callData: callData,
         },
         signer
-      );
+      ).then(async (res) => {
+        res.callGasLimit = BigNumber.from(res.callGasLimit.valueOf())._hex;
+        res.verificationGasLimit = BigNumber.from(
+          res.verificationGasLimit.valueOf()
+        )._hex;
+        res.maxFeePerGas = BigNumber.from(res.maxFeePerGas.valueOf())._hex;
+
+        console.log(res);
+        await axios
+          .post("http://34.142.147.90:5000/5/", {
+            jsonrpc: "2.0",
+            id: 1,
+            method: "eth_sendUserOperation",
+            params: [res, "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"],
+          })
+          .then((r) => console.log(r));
+      });
     }
-    console.log(userOp);
   }
 
   return (
@@ -84,11 +122,12 @@ function CreateTransactionModal({ handleClose }) {
         transform: "translate(-50%, -50%)",
         backgroundColor: "#111827",
         width: "40%",
-        height: "60%",
+        height: "70%",
         borderRadius: "25px",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        color: "#FFF",
       }}
     >
       <Box
@@ -127,7 +166,7 @@ function CreateTransactionModal({ handleClose }) {
               textTransform: "none",
               borderRadius: "15px",
               fontFamily: "inherit",
-              color: "inherit",
+              color: "#FFF",
               border: "2px solid #5C80BC",
               width: "100%",
               height: "50px",
@@ -224,6 +263,38 @@ function CreateTransactionModal({ handleClose }) {
           <Input
             value={receiver}
             onChange={(e) => setReceiver(e.target.value)}
+            disableUnderline
+            color="#FFF"
+            sx={{
+              paddingLeft: "10px",
+              height: "50px",
+              color: "#FFF",
+              fontFamily: "inherit",
+              fontSize: "18px",
+              fontWeight: "500",
+              border: "2px solid #5C80BC",
+              borderRadius: "15px",
+              width: "100%",
+            }}
+          />
+        </Box>
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          bgcolor: "#161E2D",
+          width: "80%",
+          borderRadius: "15px",
+          marginTop: "30px",
+          padding: "20px",
+        }}
+      >
+        <Box fontWeight="600">Calldata:</Box>
+        <Box px={2} width="100%">
+          <Input
+            value={calldata}
+            onChange={(e) => setCalldata(e.target.value)}
             disableUnderline
             color="#FFF"
             sx={{

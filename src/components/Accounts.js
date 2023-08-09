@@ -28,7 +28,7 @@ function Account({ nameTag, owner, address, tokens }) {
         flexDirection: "column",
         justifyContent: "flex-start",
         borderRadius: "15px",
-        bgcolor: "#192238",
+        bgcolor: "#468faf",
         marginBottom: "3%",
         paddingX: "4%",
         paddingY: "2%",

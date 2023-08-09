@@ -26,7 +26,7 @@ import {
   EntryPoint__factory,
 } from "./typechain";
 export const factory = AccountFactory__factory.connect(
-  "0xD31F762336Ad8FAF05158BCE038BF57276018B29",
+  "0x5d80064601e258550439be34e5DC99B277c86F5D",
   goerliProvider
 );
 export const ep = EntryPoint__factory.connect(

@@ -25,6 +25,37 @@ const steps = [
   "Confirm recovery phrase",
 ];
 
+export async function encryptAndStore(mnemonic, password) {
+  const nonce = _sodium.randombytes_buf(_sodium.crypto_secretbox_NONCEBYTES);
+  const keyHash = pbkdf2Sync(password, "salt", 256, 32, "sha512");
+
+  const encrypted = _sodium.crypto_secretbox_easy(mnemonic, nonce, keyHash);
+
+  const count = 0;
+  const ownerPrivKey = sha256.x2(mnemonic + count);
+  const ownerAddress = ethers.utils.computeAddress("0x" + ownerPrivKey);
+  const accountAddress = await getDeployedAddress(
+    ownerAddress,
+    "0x".padEnd(66, "0")
+  );
+  const walletInfo = {
+    accounts: [
+      {
+        owner: ownerAddress,
+        creationNonce: count,
+        address: accountAddress,
+        tokens: [{ tokenSymbol: "ETH", tokenDecimal: 18 }],
+        nameTag: `Account #${count + 1}`,
+      },
+    ],
+    currentNonce: count,
+  };
+
+  localStorage.setItem("account_infor", JSON.stringify(walletInfo));
+  localStorage.setItem("mnemonic", JSON.stringify(encrypted));
+  localStorage.setItem("encryption_nonce", JSON.stringify(nonce));
+}
+
 function CreateWallet() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -39,37 +70,6 @@ function CreateWallet() {
     setMnemonic(mnemonic);
   }
 
-  async function encryptAndStore(mnemonic, password) {
-    const nonce = _sodium.randombytes_buf(_sodium.crypto_secretbox_NONCEBYTES);
-    const keyHash = pbkdf2Sync(password, "salt", 256, 32, "sha512");
-
-    const encrypted = _sodium.crypto_secretbox_easy(mnemonic, nonce, keyHash);
-
-    const count = 0;
-    const ownerPrivKey = sha256.x2(mnemonic + count);
-    const ownerAddress = ethers.utils.computeAddress("0x" + ownerPrivKey);
-    const accountAddress = await getDeployedAddress(
-      ownerAddress,
-      "0x".padEnd(66, "0")
-    );
-    const walletInfo = {
-      accounts: [
-        {
-          owner: ownerAddress,
-          creationNonce: count,
-          address: accountAddress,
-          tokens: [],
-          nameTag: `Account #${count + 1}`,
-        },
-      ],
-      currentNonce: count,
-    };
-
-    localStorage.setItem("account_infor", JSON.stringify(walletInfo));
-    localStorage.setItem("mnemonic", JSON.stringify(encrypted));
-    localStorage.setItem("encryption_nonce", JSON.stringify(nonce));
-  }
-
   return (
     <Collapse in={currentStep > 0}>
       <Box
@@ -79,6 +79,9 @@ function CreateWallet() {
           justifyContent: "center",
           alignItems: "center",
           width: "600px",
+          borderRadius: "20px",
+          padding: "40px",
+          backgroundColor: "#DEE2E6",
         }}
       >
         {currentStep < 4 ? (
@@ -91,7 +94,7 @@ function CreateWallet() {
                 {steps.map((label) => (
                   <Step key={label}>
                     <StepLabel>
-                      <Box sx={{ color: "#FFF", fontFamily: "Lexend Exa" }}>
+                      <Box sx={{ color: "#212529", fontFamily: "Lexend Exa" }}>
                         {label}
                       </Box>
                     </StepLabel>
@@ -120,15 +123,15 @@ function CreateWallet() {
                       onChange={(e) => setPassword(e.target.value)}
                       type="password"
                       disableUnderline
-                      color="#FFF"
+                      color="#212529"
                       sx={{
                         paddingLeft: "20px",
                         height: "50px",
-                        color: "#FFF",
+                        color: "#212529",
                         fontFamily: "inherit",
                         fontSize: "18px",
                         fontWeight: "500",
-                        border: "2px solid #FFF",
+                        border: "2px solid #212529",
                         borderRadius: "15px",
                         width: "60%",
                       }}
@@ -148,15 +151,15 @@ function CreateWallet() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       type="password"
                       disableUnderline
-                      color="#FFF"
+                      color="#212529"
                       sx={{
                         paddingLeft: "20px",
                         height: "50px",
-                        color: "#FFF",
+                        color: "#212529",
                         fontFamily: "inherit",
                         fontSize: "18px",
                         fontWeight: "500",
-                        border: "2px solid #FFF",
+                        border: "2px solid #212529",
                         borderRadius: "15px",
                         width: "60%",
                       }}
@@ -180,7 +183,7 @@ function CreateWallet() {
                           sx={{
                             display: "flex",
                             justifyContent: "center",
-                            border: "1px solid #fff",
+                            border: "1px solid #212529",
                             paddingY: "10px",
                             borderRadius: "10px",
                           }}
@@ -222,15 +225,15 @@ function CreateWallet() {
                               )
                             }
                             disableUnderline
-                            color="#FFF"
+                            color="#212529"
                             sx={{
                               paddingLeft: "20px",
                               height: "50px",
-                              color: "#FFF",
+                              color: "#212529",
                               fontFamily: "inherit",
                               fontSize: "18px",
                               fontWeight: "500",
-                              border: "2px solid #FFF",
+                              border: "2px solid #212529",
                               borderRadius: "15px",
                               width: "80%",
                             }}
@@ -252,13 +255,13 @@ function CreateWallet() {
               <Button
                 sx={{
                   borderRadius: "15px",
-                  border: "1px solid #FFF",
+                  border: "1px solid #212529",
                   padding: "10px",
                   paddingX: "24px",
                   margin: 0,
                   textTransform: "none",
                   fontFamily: "inherit",
-                  color: "#FFF",
+                  color: "#212529",
                 }}
                 onClick={() => setCurrentStep(currentStep - 1)}
               >
@@ -268,13 +271,13 @@ function CreateWallet() {
                 <Button
                   sx={{
                     borderRadius: "15px",
-                    border: "1px solid #FFF",
+                    border: "1px solid #212529",
                     padding: "10px",
                     paddingX: "24px",
                     margin: 0,
                     textTransform: "none",
                     fontFamily: "inherit",
-                    color: "#FFF",
+                    color: "#212529",
                   }}
                   onClick={async () => {
                     switch (currentStep) {

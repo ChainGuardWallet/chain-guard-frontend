@@ -63,7 +63,7 @@ function Sidebar() {
               md: "110px",
               lg: "300px",
             },
-            backgroundColor: "#111827",
+            backgroundColor: "#DEE2E6",
             boxSizing: "border-box",
             border: "none",
           },
@@ -78,7 +78,7 @@ function Sidebar() {
             justifyContent: "center",
             py: 3,
             paddingBottom: "15vh",
-            color: "#FFF",
+            color: "#343A40",
           }}
         >
           ChainGuard
@@ -87,7 +87,7 @@ function Sidebar() {
         <List>
           {mnemonic !== null
             ? loggedRoutes.map((item) => (
-                <Box>
+                <Box display="flex" justifyContent="center" paddingX="10px">
                   <Button
                     disableTouchRipple
                     onClick={() => navigate(item.route)}
@@ -98,16 +98,19 @@ function Sidebar() {
                       width: "100%",
                       paddingBottom: "10px",
                       color: `${
-                        location.pathname === item.route ? "#70BDD6" : "#FFF"
+                        location.pathname === item.route ? "#DEE2E6" : "#ADB5BD"
                       }`,
-                      borderRight: `
-                         4px
-                       solid  ${
-                         location.pathname === item.route
-                           ? "#009DDC"
-                           : "transparent"
-                       }`,
-                      borderRadius: "0px",
+                      background: `${
+                        location.pathname === item.route ? "#0077B6" : "#DEE2E6"
+                      }`,
+                      borderRadius: "15px",
+                      "&:hover": {
+                        background: `${
+                          location.pathname === item.route
+                            ? "#0077B6"
+                            : "#DEE2E6"
+                        }`,
+                      },
                     }}
                   >
                     {item.name}
@@ -115,7 +118,7 @@ function Sidebar() {
                 </Box>
               ))
             : defaultRoutes.map((item) => (
-                <Box display="flex" justifyContent="center">
+                <Box display="flex" justifyContent="center" paddingX="10px">
                   <Button
                     disableTouchRipple
                     disableRipple
@@ -127,16 +130,19 @@ function Sidebar() {
                       width: "100%",
                       paddingBottom: "10px",
                       color: `${
-                        location.pathname === item.route ? "#70BDD6" : "#FFF"
+                        location.pathname === item.route ? "#DEE2E6" : "#ADB5BD"
                       }`,
-                      borderRight: `
-                         4px
-                       solid  ${
-                         location.pathname === item.route
-                           ? "#70BDD6"
-                           : "transparent"
-                       }`,
-                      borderRadius: "0px",
+                      background: `${
+                        location.pathname === item.route ? "#0077B6" : "#DEE2E6"
+                      }`,
+                      borderRadius: "15px",
+                      "&:hover": {
+                        background: `${
+                          location.pathname === item.route
+                            ? "#0077B6"
+                            : "#DEE2E6"
+                        }`,
+                      },
                     }}
                   >
                     {item.name}

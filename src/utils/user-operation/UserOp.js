@@ -53,7 +53,7 @@ var ethers_1 = require("ethers");
 var utils_2 = require("./utils");
 var ethereumjs_util_1 = require("ethereumjs-util");
 var typechain_1 = require("./typechain");
-exports.factory = typechain_1.AccountFactory__factory.connect("0xD31F762336Ad8FAF05158BCE038BF57276018B29", utils_2.goerliProvider);
+exports.factory = typechain_1.AccountFactory__factory.connect("0x5d80064601e258550439be34e5DC99B277c86F5D", utils_2.goerliProvider);
 exports.ep = typechain_1.EntryPoint__factory.connect("0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789", utils_2.goerliProvider);
 function packUserOp(op, forSignature) {
     if (forSignature === void 0) { forSignature = true; }

@@ -9,6 +9,7 @@ import sha256 from "sha256";
 import { getDeployedAddress } from "../utils/user-operation/UserOp";
 import { goerliProvider } from "../utils/user-operation/utils";
 import ERC20 from "../abis/ERC20.json";
+import { resolve } from "url";
 
 function Dashboard() {
   const { mnemonic } = useContext(AccountContext);
@@ -36,14 +37,20 @@ function Dashboard() {
       nameTag: `Account #${currentNonce + 1}`,
     };
     console.log(account);
-    setAccountsInfo([...accountsInfo, account]);
-    localStorage.setItem(
-      "account_infor",
-      JSON.stringify({
-        accounts: accountsInfo,
-        currentNonce: currentNonce,
-      })
-    );
+    const accountHandler = new Promise((resolve, reject) => {
+      resolve();
+    });
+    accountHandler
+      .then(() =>
+        localStorage.setItem(
+          "account_infor",
+          JSON.stringify({
+            accounts: [...accountsInfo, account],
+            currentNonce: currentNonce,
+          })
+        )
+      )
+      .then(() => setAccountsInfo([...accountsInfo, account]));
   }
 
   useEffect(() => {
@@ -100,14 +107,14 @@ function Dashboard() {
         <Box width="26%" display="flex" justifyContent="space-between">
           <Button
             sx={{
-              bgcolor: "#416CB8",
+              bgcolor: "#0077B6",
               padding: "10px",
               borderRadius: "10px",
               textTransform: "none",
               fontFamily: "inherit",
               color: "inherit",
               "&:hover": {
-                bgcolor: "#416CB8",
+                bgcolor: "#0077B6",
               },
             }}
             onClick={async () => await handleAddAccount()}
@@ -117,14 +124,14 @@ function Dashboard() {
           </Button>
           <Button
             sx={{
-              bgcolor: "#416CB8",
+              bgcolor: "#0077B6",
               padding: "10px",
               borderRadius: "10px",
               textTransform: "none",
               fontFamily: "inherit",
               color: "inherit",
               "&:hover": {
-                bgcolor: "#416CB8",
+                bgcolor: "#0077B6",
               },
             }}
             onClick={handleNewTx}

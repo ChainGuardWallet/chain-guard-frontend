@@ -58,6 +58,9 @@ function GettingStarted() {
               justifyContent: "center",
               alignItems: "center",
               width: "100%",
+              borderRadius: "20px",
+              padding: "40px",
+              backgroundColor: "#DEE2E6",
             }}
           >
             <Box pb={3}>Login to your wallet.</Box>
@@ -67,15 +70,15 @@ function GettingStarted() {
                 onChange={(e) => setLoginPassword(e.target.value)}
                 type="password"
                 disableUnderline
-                color="#FFF"
+                color="#212529"
                 sx={{
                   paddingLeft: "20px",
                   height: "50px",
-                  color: "#FFF",
+                  color: "#212529",
                   fontFamily: "inherit",
                   fontSize: "18px",
                   fontWeight: "500",
-                  border: "2px solid #FFF",
+                  border: "2px solid #212529",
                   borderRadius: "25px",
                   width: "100%",
                 }}
@@ -84,13 +87,13 @@ function GettingStarted() {
                     <Button
                       sx={{
                         borderRadius: "25px",
-                        border: "2px solid #FFF",
+                        border: "2px solid #212529",
                         padding: "10px",
                         paddingX: "24px",
                         margin: 0,
                         textTransform: "none",
                         fontFamily: "inherit",
-                        color: "#FFF",
+                        color: "#212529",
                       }}
                       onClick={() => handleLogin(loginPassword)}
                     >
@@ -104,7 +107,7 @@ function GettingStarted() {
               children={<Paper />}
               my={5}
               sx={{
-                background: "#FFF",
+                background: "#212529",
                 height: "2px",
                 width: "500px",
               }}
@@ -114,13 +117,13 @@ function GettingStarted() {
               <Button
                 sx={{
                   borderRadius: "25px",
-                  border: "2px solid #FFF",
+                  border: "2px solid #212529",
                   padding: "10px",
                   paddingX: "24px",
                   margin: 0,
                   textTransform: "none",
                   fontFamily: "inherit",
-                  color: "#FFF",
+                  color: "#212529",
                   width: "100%",
                 }}
                 onClick={() => {

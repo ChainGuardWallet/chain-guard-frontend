@@ -30,9 +30,11 @@ function truncateString(str, num) {
 }
 
 function History() {
-  const [accountInfo, setAccountInfo] = useState([]);
+  const [accountHistory, setAccountHistory] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [accounts, setAccounts] = useState([]);
   const [sender, setSender] = useState(addresses[0]);
+  const [selectedAccount, setSelectedAccount] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [ethPrice, setETHPrice] = useState(0);
 
@@ -44,16 +46,26 @@ function History() {
   };
 
   useEffect(() => {
-    async function getAccountInfo() {
+    setAccounts(
+      JSON.parse(localStorage.getItem("account_infor")).accounts.map(
+        (acc) => acc.address
+      )
+    );
+    if (selectedAccount == null) {
+      setSelectedAccount(
+        JSON.parse(localStorage.getItem("account_infor")).accounts[0].address
+      );
+    }
+    async function getAccountHistory() {
       setIsLoading(true);
       await axios
         .get(
-          `https://api.aascan.org/api/v1/account?chain_id=5&address=${sender}&type=sender`
+          `https://api.aascan.org/api/v1/account?chain_id=5&address=${selectedAccount}&type=sender`
         )
         .then((res) => {
           console.log(res.data.data.list);
           if (res.data.data != null) {
-            setAccountInfo(res.data.data.list);
+            setAccountHistory(res.data.data.list);
           }
         });
       await axios
@@ -69,13 +81,12 @@ function History() {
         .then((res) => setETHPrice(res.data.USD));
       setIsLoading(false);
     }
-    getAccountInfo();
-  }, [sender]);
-
+    getAccountHistory();
+  }, [selectedAccount]);
   return (
-    <Box display="flex" flexDirection="column">
+    <Box display="flex" flexDirection="column" color="#212529">
       <Box display="flex" alignItems="center">
-        <Box pr={2}>Sender: </Box>
+        <Box pr={2}>Account: </Box>
         <Button
           sx={{
             textTransform: "none",
@@ -88,7 +99,7 @@ function History() {
           }}
           onClick={handleClick}
         >
-          <Box width="95%">{sender}</Box>
+          <Box width="95%">{selectedAccount}</Box>
           <Box width="5%" display="flex" alignItems="center">
             <KeyboardArrowRightIcon />
           </Box>
@@ -116,88 +127,102 @@ function History() {
               display: "flex",
               justifyContent: "center",
               border: "2px solid #5C80BC",
-              bgcolor: "#192238",
+              bgcolor: "#DEE2E6",
               borderRadius: "15px",
-              color: "#FFF",
+              color: "#212529",
               width: "500px",
             }}
           >
             <MenuList>
-              {addresses.map(
-                (addr) =>
-                  addr !== sender && (
-                    <MenuItem
-                      sx={{
-                        fontFamily: "Lexend Exa",
-                        fontSize: "15px",
-                        fontWeight: "500",
-                        paddingY: "0px",
-                      }}
-                      onClick={() => setSender(addr)}
-                    >
-                      <Box
-                        display="flex"
-                        justifyContent="flex-start"
-                        width="100%"
+              {accounts === null ? (
+                <>
+                  <CircularProgress />
+                </>
+              ) : accounts.length < 2 ? null : (
+                accounts.map(
+                  (addr) =>
+                    addr !== selectedAccount && (
+                      <MenuItem
+                        sx={{
+                          fontFamily: "Lexend Exa",
+                          fontSize: "15px",
+                          fontWeight: "500",
+                          paddingY: "0px",
+                        }}
+                        onClick={() => setSelectedAccount(addr)}
                       >
-                        {addr}
-                      </Box>
-                    </MenuItem>
-                  )
+                        <Box
+                          display="flex"
+                          justifyContent="flex-start"
+                          width="100%"
+                        >
+                          {addr}
+                        </Box>
+                      </MenuItem>
+                    )
+                )
               )}
             </MenuList>
           </Box>
         </Popover>
       </Box>
-      <Box color="#FFF">
+      <Box color="#212529">
         <Table>
           <TableHead>
             <TableRow>
               <TableCell
                 align="left"
-                sx={{ color: "#FFF", fontFamily: "Lexend Exa" }}
+                sx={{ color: "#212529", fontFamily: "Lexend Exa" }}
               >
                 User Op Hash
               </TableCell>
               <TableCell
                 align="left"
-                sx={{ color: "#FFF", fontFamily: "Lexend Exa" }}
+                sx={{ color: "#212529", fontFamily: "Lexend Exa" }}
               >
                 Status
               </TableCell>
-              <TableCell sx={{ color: "#FFF", fontFamily: "Lexend Exa" }}>
+              <TableCell sx={{ color: "#212529", fontFamily: "Lexend Exa" }}>
                 Date
               </TableCell>
-              <TableCell sx={{ color: "#FFF", fontFamily: "Lexend Exa" }}>
+              <TableCell sx={{ color: "#FF212529F", fontFamily: "Lexend Exa" }}>
                 Receiver
               </TableCell>
-              <TableCell sx={{ color: "#FFF", fontFamily: "Lexend Exa" }}>
+              <TableCell sx={{ color: "#212529", fontFamily: "Lexend Exa" }}>
                 Fee
               </TableCell>
             </TableRow>
           </TableHead>
-          {accountInfo === null ? (
+          {accountHistory === undefined || accountHistory === null ? (
             <></>
           ) : (
             <TableBody>
-              {accountInfo.map((row) => (
+              {accountHistory.map((row) => (
                 <TableRow hover>
                   <TableCell
                     align="left"
-                    sx={{ color: "#FFF", fontFamily: "Lexend Exa" }}
+                    sx={{ color: "#212529", fontFamily: "Lexend Exa" }}
                   >
                     {truncateString(row.user_op_hash, 30)}
                   </TableCell>
-                  <TableCell sx={{ color: "#FFF", fontFamily: "Lexend Exa" }}>
+                  <TableCell
+                    sx={{ color: "#212529", fontFamily: "Lexend Exa" }}
+                  >
                     {row.status}
                   </TableCell>
-                  <TableCell sx={{ color: "#FFF", fontFamily: "Lexend Exa" }}>
+                  <TableCell
+                    sx={{ color: "#212529", fontFamily: "Lexend Exa" }}
+                  >
                     {new Date(parseInt(row.timestamp) * 1000).toLocaleString()}
                   </TableCell>
-                  <TableCell sx={{ color: "#FFF", fontFamily: "Lexend Exa" }}>
+                  <TableCell
+                    sx={{ color: "#212529", fontFamily: "Lexend Exa" }}
+                  >
                     {truncateString("0x" + row.call_data.slice(34, 74), 20)}
                   </TableCell>
-                  <TableCell sx={{ color: "#FFF", fontFamily: "Lexend Exa" }}>
+                  <TableCell
+                    sx={{ color: "#212529", fontFamily: "Lexend Exa" }}
+                  >
                     {((parseInt(row.actual_gas_cost) / 10 ** 18) * ethPrice)
                       .toString()
                       .slice(0, 4)}{" "}
@@ -212,7 +237,7 @@ function History() {
           {" "}
           {isLoading ? (
             <CircularProgress />
-          ) : accountInfo === null ? (
+          ) : accountHistory === null ? (
             "No history found"
           ) : (
             <></>
